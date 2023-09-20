@@ -143,7 +143,7 @@ public:
     };
 
 
-    void mover_Ficha(int fila1, int col1, int fila2, int col2, bool& turno) {
+    void mover_Ficha(int fila1, int col1, int fila2, int col2, bool& turno, bool coronacion) {
         if (tablero[fila1][col1] == nullptr) {
             turno = !turno;
             //cout << "No existe pieza ahi"; 
@@ -164,7 +164,7 @@ public:
             if (Col_resta == 1) {//revisa que solo sean diagonales
                 swap_Ficha(fila1, col1, fila2, col2);
                 //revisa si llego al final y es hora de coronar
-                if ((tablero[fila2][col2]->equipo == 0 && fila2 == 7) || (tablero[fila2][col2]->equipo == 1 && fila2 == 0)) {
+                if (((tablero[fila2][col2]->equipo == 0 && fila2 == 7) || (tablero[fila2][col2]->equipo == 1 && fila2 == 0)) && coronacion != 0) {
                     tablero[fila2][col2]->tipo = 1;
                     //cout << "Coronaste a la ficha :D" << endl; 
                 }
@@ -198,7 +198,7 @@ public:
         // Si ninguna de las condiciones anteriores se cumple, intenta comer una ficha
         if (abs(Fila_resta) >= 2 && Col_resta >= 2) {
             comer_Ficha(fila1, col1, fila2, col2, turno);//comer normal de un peon, verifica que no se salga del tablero :D
-            if ((tablero[fila2][col2]->equipo == 0 && fila2 == 7) || (tablero[fila2][col2]->equipo == 1 && fila2 == 0)) {//estaba bonito pero no entiendo xq esta condicion se la salta como si nada xd
+            if (((tablero[fila2][col2]->equipo == 0 && fila2 == 7) || (tablero[fila2][col2]->equipo == 1 && fila2 == 0)) && coronacion != 0) {//estaba bonito pero no entiendo xq esta condicion se la salta como si nada xd
                 tablero[fila2][col2]->tipo = 1;
                 // cout << "Coronaste a la ficha :D" << endl; 
             }
@@ -210,13 +210,14 @@ public:
     };
 };
 
+
 int evaluarTablero(Tablero& tablero) {//lo de la resta pa ver el puntaje
     return tablero.piezas[0] - tablero.piezas[1];
 }
 
 
 
-vector<Tablero> generarMovimientos(Tablero& tablita, bool esMaximizador) { //duda sobre lo de copiar tabla con el &
+vector<Tablero> generarMovimientos(Tablero& tablita, bool esMaximizador, vector<int>& posiciones) { //duda sobre lo de copiar tabla con el &
     vector<Tablero> movimientos;
 
     // Recorre todas las fichas en el tablero
@@ -239,6 +240,7 @@ vector<Tablero> generarMovimientos(Tablero& tablita, bool esMaximizador) { //dud
                                 nuevoTablero.tablero[i + di / 2][j + dj / 2] = nullptr;
                                 // Añade la nueva "tablita" a la lista de movimientos
                                 movimientos.push_back(nuevoTablero);
+                                posiciones.push_back(i), posiciones.push_back(j), posiciones.push_back(i + di), posiciones.push_back(j + dj);
                             }
                         }
                     }
@@ -251,10 +253,11 @@ vector<Tablero> generarMovimientos(Tablero& tablita, bool esMaximizador) { //dud
                             Tablero nuevoTablero = tablita;
                             bool tempTurno = esMaximizador;// este temp esta porque el mover ficha cambia el turno por si te equivocas, para que no pierdas turno, asi que aqui para que no mate el codigo lo aislamos
                             // Mueve la ficha en el nuevoTablero usando mover_Ficha
-                            nuevoTablero.mover_Ficha(i, j, i + di, j + dj, tempTurno);
+                            nuevoTablero.mover_Ficha(i, j, i + di, j + dj, tempTurno, 0);
                             // Si el movimiento fue válido, añade el nuevo tablero a la lista de movimientos
                             if (nuevoTablero.tablero[i + di][j + dj] != nullptr) {
                                 movimientos.push_back(nuevoTablero);
+                                posiciones.push_back(i), posiciones.push_back(j), posiciones.push_back(i + di), posiciones.push_back(j + dj);
                             }
                         }
                     }
@@ -273,8 +276,8 @@ int minimax(Tablero tablero, int profundidad, bool Max, int alfa, int beta) {//"
     if (profundidad == 0) {
         return evaluarTablero(tablero);
     }
-
-    std::vector<Tablero> movimientos = generarMovimientos(tablero, Max);//genera siguientes movimientos para ir viendo cual es mejor
+    vector<int>posiciones;
+    std::vector<Tablero> movimientos = generarMovimientos(tablero, Max, posiciones);//genera siguientes movimientos para ir viendo cual es mejor
 
     if (Max) {//en este creo q era nuestra jugada 
         int maxEval = -999999; // por no poner infinito negativo
@@ -325,7 +328,7 @@ int main() {
             cout << "ingresar nivel de profundidad de busqueda de la computadora " << endl;
             cin >> profundidad;
             if (tablero.tablero[x][y] != nullptr && tablero.tablero[x][y]->equipo == turnoJugador) {
-                tablero.mover_Ficha(x, y, x_, y_, turnoJugador);
+                tablero.mover_Ficha(x, y, x_, y_, turnoJugador, 0);
                 turnoJugador = !turnoJugador; // Cambia el turno
             }
             else {
@@ -335,18 +338,21 @@ int main() {
         else {
             // La computadora hace su jugada
             int mejorValor = -999999; // pa no poner infinito negativo 
-            Tablero mejorMovimiento;
-            std::vector<Tablero> movimientos = generarMovimientos(tablero, turnoJugador);
+            vector<int>posiciones;
+            int fila1 = 0, col1 = 0, fila2 = 0, col2 = 0;
+            std::vector<Tablero> movimientos = generarMovimientos(tablero, turnoJugador, posiciones);
+            int i = 0;
             for (Tablero movimiento : movimientos) {
                 int valor = minimax(movimiento, profundidad, !turnoJugador, -999999, 999999); // genera primero una serie de movimientos los cuales desde cada uno analizara cual saldra mas rentable
                 //de ahi bueno el mas rentable lo va guardando aqui abajo 
                 if (valor > mejorValor) {
                     mejorValor = valor;
-                    mejorMovimiento = movimiento;
+                    fila1 = posiciones[i], col1 = posiciones[i + 1], fila2 = posiciones[i + 2], col2 = posiciones[i + 3];
                 }
+                i += 4;
             }
-            tablero = mejorMovimiento; // cambia el tablero por el del mejor movimiento
-            turnoJugador = !turnoJugador; 
+            tablero.mover_Ficha(fila1, col1, fila2, col2, turnoJugador, 1); // cambia el tablero por el del mejor movimiento
+            turnoJugador = !turnoJugador;
         }
         if (tablero.piezas[0] == 0) { cout << endl << "ganaste :D"; run = false; }
         else if (tablero.piezas[1] == 0) { cout << endl << "perdiste D:"; run = false; }
