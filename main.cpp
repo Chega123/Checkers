@@ -1,4 +1,4 @@
-#include <iostream>
+/* #include <iostream>
 #include <vector>
 #include <cmath>
 using namespace std;
@@ -357,5 +357,14 @@ int main() {
         if (tablero.piezas[0] == 0) { cout << endl << "ganaste :D"; run = false; }
         else if (tablero.piezas[1] == 0) { cout << endl << "perdiste D:"; run = false; }
     }
+    return 0;
+} */
+
+
+#include "Board.h"
+
+int main(int argc, char **argv){
+    Board wiii(8);
+    wiii.run(argc, argv);
     return 0;
 }
