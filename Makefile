@@ -5,7 +5,7 @@ CXX = g++
 CXXFLAGS = -Wall -std=c++11
 LDFLAGS = -lGL -lGLU -lglut
 
-SRCS = main.cpp Board.cpp Checker.cpp
+SRCS = mainGL.cpp Board.cpp Checker.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 

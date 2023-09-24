@@ -111,19 +111,15 @@ void Board::computadoraJuega() {
         std::vector<Checker> movimientos = juego.generarMovimientos(Copia, turnojugador, posiciones);
         int i = 0;
         for (Checker movimiento : movimientos) {
-            std::cout << "xd\n";
             int valor = juego.minimax(movimiento, profundidad, !turnojugador, -999999, 999999); // genera primero una serie de movimientos los cuales desde cada uno analizara cual saldra mas rentable
             //de ahi bueno el mas rentable lo va guardando aqui abajo 
-            std::cout << "Mejor Valor: " << mejorValor  << " Valor: " << valor << " "  << posiciones[i] << " " << posiciones[i+1] << " " << posiciones[i+2] << " "<< posiciones[i+3] << std::endl;
             if (valor >= mejorValor) {
-                std::cout << posiciones[i] << " " << posiciones[i+1] << " " << posiciones[i+2] << " "<< posiciones[i+3] << std::endl;
                 mejorValor = valor;
                 fila1 = posiciones[i], col1 = posiciones[i + 1], fila2 = posiciones[i + 2], col2 = posiciones[i + 3];
             }
             i += 4;
         }
         juego.mover_Ficha(fila1, col1, fila2, col2, turnojugador, 1); // cambia el tablero por el del mejor movimiento
-        std::cout << "se mueve a fila2: "  << fila2 << " col2: " << col2 << std::endl;
     }
     if (juego.piezas[0] == 0) {
         cout << endl << "ganaste :D\n";
@@ -131,7 +127,6 @@ void Board::computadoraJuega() {
     else if (juego.piezas[1] == 0) {
         cout << endl << "perdiste D:\n";
     }
-    std::cout << "aldkjfalsdkjfalsd\n";
 }
 
 void Board::handleMouseClick(int x, int y) {
