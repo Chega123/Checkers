@@ -53,10 +53,10 @@ public:
                 cout << " ";
                 if (*jt != nullptr) {
                     //imprimimos fichas según equipo :D
-                    if ((*jt)->equipo == 0 && (*jt)->tipo == 0) { cout << "Ø"; }
+                    if ((*jt)->equipo == 0 && (*jt)->tipo == 0) { cout << "P"; }
                     else if ((*jt)->equipo == 1 && (*jt)->tipo == 0) { cout << "O"; }
                     else if ((*jt)->equipo == 0 && (*jt)->tipo == 1) { cout << "@"; }
-                    else if ((*jt)->equipo == 1 && (*jt)->tipo == 1) { cout << "©"; }
+                    else if ((*jt)->equipo == 1 && (*jt)->tipo == 1) { cout << "#"; }
                 }
 
                 else {
@@ -239,6 +239,8 @@ vector<Tablero> generarMovimientos(Tablero& tablita, bool esMaximizador, vector<
                                 nuevoTablero.tablero[i][j] = nullptr;
                                 nuevoTablero.tablero[i + di / 2][j + dj / 2] = nullptr;
                                 // Añade la nueva "tablita" a la lista de movimientos
+
+                                nuevoTablero.piezas[tablita.tablero[i + di / 2][j + dj / 2]->equipo] -= 1;
                                 movimientos.push_back(nuevoTablero);
                                 posiciones.push_back(i), posiciones.push_back(j), posiciones.push_back(i + di), posiciones.push_back(j + dj);
                             }
