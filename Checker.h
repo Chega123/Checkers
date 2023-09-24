@@ -14,9 +14,9 @@ private:
 
 public:
     Checker();
-    ~Checker();
+    // ~Checker();
     int piezas[2] = { 12,12 };
-    Checker& operator=(const Checker& other);
+    // Checker& operator=(const Checker& other);
     Checker copiarTablero();
     void swap_Ficha(int fila1, int col1, int fila2, int col2);
     void comer_Ficha(int fila1, int col1, int fila2, int col2, bool turno);

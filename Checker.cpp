@@ -5,91 +5,6 @@ Checker::Checker() {
     llenar_tablero();
 }
 
-Checker::~Checker() {
-    for(auto &row : tablero) {
-        for(auto &piece : row) {
-            delete piece;
-        }
-    }
-}
-
-Checker Checker::copiarTablero() { 
-    Checker copia;
-
-    // Copiar el estado del tablero
-    for (int i = 0; i < 8; i++) {
-        for (int j = 0; j < 8; j++) {
-            if (tablero[i][j] != nullptr) {
-                copia.tablero[i][j] = new Ficha(tablero[i][j]->equipo, tablero[i][j]->tipo);
-            }
-        }
-    }
-
-    // Copiar el estado de las piezas
-    copia.piezas[0] = piezas[0];
-    copia.piezas[1] = piezas[1];
-
-    return copia;
-}
-
-
-Checker& Checker::operator=(const Checker& other) {
-    // Comprobar si se está asignando a sí mismo
-    if (this == &other) {
-        return *this; // Devolver la instancia actual sin cambios
-    }
-
-    // Copiar el tamaño del tablero
-    this->tablero.resize(other.tablero.size());
-    for (size_t i = 0; i < other.tablero.size(); ++i) {
-        this->tablero[i].resize(other.tablero[i].size());
-    }
-
-    // Realizar una copia profunda de las fichas en el tablero
-    for (size_t i = 0; i < other.tablero.size(); ++i) {
-        for (size_t j = 0; j < other.tablero[i].size(); ++j) {
-            if (other.tablero[i][j] != nullptr) {
-                this->tablero[i][j] = new Ficha(*other.tablero[i][j]);
-            } else {
-                this->tablero[i][j] = nullptr;
-            }
-        }
-    }
-
-    // Copiar otros datos miembros
-    this->piezas[0] = other.piezas[0];
-    this->piezas[1] = other.piezas[1];
-
-    return *this; // Devolver la instancia actual modificada
-}
-
-/* Checker& Checker::operator=(const Checker& other) {
-    if (this != &other) { // protect against invalid self-assignment
-        // 1: deallocate old memory
-        for (int i = 0; i < 8; ++i) {
-            for (int j = 0; j < 8; ++j) {
-                delete tablero[i][j];
-            }
-        }
-
-        // 2: allocate new memory and copy the elements
-        tablero = vector<vector<Ficha*>>(8, vector<Ficha*>(8, nullptr));
-        for (int i = 0; i < 8; ++i) {
-            for (int j = 0; j < 8; ++j) {
-                if (other.tablero[i][j] != nullptr) {
-                    tablero[i][j] = new Ficha(*(other.tablero[i][j])); // assuming Ficha has a copy constructor
-                }
-            }
-        }
-
-        // 3: copy piezas
-        piezas[0] = other.piezas[0];
-        piezas[1] = other.piezas[1];
-    }
-    return *this;
-} */
-
-
 vector<vector<Ficha *>> Checker::getTablero() {
     return tablero;
 }
@@ -299,12 +214,14 @@ vector<Checker> Checker::generarMovimientos(Checker& tablita, bool esMaximizador
                             // Verifica si hay una ficha del equipo contrario entre el lugar donde estamos y al que queremos ir
                             if (tablita.tablero[i + di / 2][j + dj / 2] != nullptr && tablita.tablero[i + di / 2][j + dj / 2]->equipo != esMaximizador) {
                                 // Crea una nueva "tablita" del tablero
-                                Checker nuevoTablero = tablita.copiarTablero();//en si es donde se hara el movimiento y asi nada mas
+                                Checker nuevoTablero = tablita;//en si es donde se hara el movimiento y asi nada mas
                                 // Mueve la ficha en el nuevoTablero y elimina la ficha del equipo contrario
                                 nuevoTablero.tablero[i + di][j + dj] = nuevoTablero.tablero[i][j];
                                 nuevoTablero.tablero[i][j] = nullptr;
                                 nuevoTablero.tablero[i + di / 2][j + dj / 2] = nullptr;
                                 // Añade la nueva "tablita" a la lista de movimientos
+
+                                nuevoTablero.piezas[tablita.tablero[i + di / 2][j + dj / 2]->equipo] -= 1;
                                 movimientos.push_back(nuevoTablero);
                                 posiciones.push_back(i), posiciones.push_back(j), posiciones.push_back(i + di), posiciones.push_back(j + dj);
                             }
@@ -316,12 +233,10 @@ vector<Checker> Checker::generarMovimientos(Checker& tablita, bool esMaximizador
                         // Verifica que el movimiento es válido
                         if (i + di >= 0 && i + di < 8 && j + dj >= 0 && j + dj < 8 && tablita.tablero[i + di][j + dj] == nullptr) {
                             // Crea un nuevo estado del tablero
-                            Checker nuevoTablero = tablita.copiarTablero();
+                            Checker nuevoTablero = tablita;
                             bool tempTurno = esMaximizador;// este temp esta porque el mover ficha cambia el turno por si te equivocas, para que no pierdas turno, asi que aqui para que no mate el codigo lo aislamos
                             // Mueve la ficha en el nuevoTablero usando mover_Ficha
-                            // nuevoTablero.mover_Ficha(i, j, i + di, j + dj, tempTurno, 0);
-                            nuevoTablero.tablero[i + di][j + dj] = nuevoTablero.tablero[i][j];
-                            nuevoTablero.tablero[i][j] = nullptr;
+                            nuevoTablero.mover_Ficha(i, j, i + di, j + dj, tempTurno, 0);
                             // Si el movimiento fue válido, añade el nuevo tablero a la lista de movimientos
                             if (nuevoTablero.tablero[i + di][j + dj] != nullptr) {
                                 movimientos.push_back(nuevoTablero);

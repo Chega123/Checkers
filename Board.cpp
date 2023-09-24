@@ -10,7 +10,7 @@ Board::Board(int size) : SIZE(size),
     p2red(1), p2green(0.4980), p2blue(0.3137),
     box(size, std::vector<Ficha*>(size, 0)) {
     currentInstance = this;
-    profundidad = 5;
+    profundidad = 3;
     juego.llenar_tablero();
     setBoardData(juego.getTablero());
 }
@@ -62,9 +62,6 @@ void Board::begin() {
                     drawCircle(j * 50 + 25, i * 50 + 25, 20);
                 }
             }
-            if (!turnojugador) {
-                computadoraJuega();
-            }
         }
     }
 }
@@ -109,30 +106,32 @@ void Board::computadoraJuega() {
     if (!turnojugador) {
         int mejorValor = -999999; // pa no poner infinito negativo 
         vector<int>posiciones;
-        Checker Copia = juego.copiarTablero();
+        Checker Copia = juego;
         int fila1 = 0, col1 = 0, fila2 = 0, col2 = 0;
         std::vector<Checker> movimientos = juego.generarMovimientos(Copia, turnojugador, posiciones);
         int i = 0;
-        /* for (Checker movimiento : movimientos) {
+        for (Checker movimiento : movimientos) {
+            std::cout << "xd\n";
             int valor = juego.minimax(movimiento, profundidad, !turnojugador, -999999, 999999); // genera primero una serie de movimientos los cuales desde cada uno analizara cual saldra mas rentable
             //de ahi bueno el mas rentable lo va guardando aqui abajo 
-            if (valor > mejorValor) {
+            std::cout << "Mejor Valor: " << mejorValor  << " Valor: " << valor << " "  << posiciones[i] << " " << posiciones[i+1] << " " << posiciones[i+2] << " "<< posiciones[i+3] << std::endl;
+            if (valor >= mejorValor) {
+                std::cout << posiciones[i] << " " << posiciones[i+1] << " " << posiciones[i+2] << " "<< posiciones[i+3] << std::endl;
                 mejorValor = valor;
                 fila1 = posiciones[i], col1 = posiciones[i + 1], fila2 = posiciones[i + 2], col2 = posiciones[i + 3];
             }
             i += 4;
-        } */
+        }
         juego.mover_Ficha(fila1, col1, fila2, col2, turnojugador, 1); // cambia el tablero por el del mejor movimiento
-        turnojugador = !turnojugador;
+        std::cout << "se mueve a fila2: "  << fila2 << " col2: " << col2 << std::endl;
     }
     if (juego.piezas[0] == 0) {
         cout << endl << "ganaste :D\n";
-        exit(1);
     }
     else if (juego.piezas[1] == 0) {
-    cout << endl << "perdiste D:\n";
-    exit(1);
+        cout << endl << "perdiste D:\n";
     }
+    std::cout << "aldkjfalsdkjfalsd\n";
 }
 
 void Board::handleMouseClick(int x, int y) {
@@ -151,16 +150,24 @@ void Board::handleMouseClick(int x, int y) {
             selectedPiece = std::make_pair(i, j);
         } 
         else if (juego.getTablero()[selectedPiece.first][selectedPiece.second]->equipo == turnojugador) {
-            juego.mover_Ficha(selectedPiece.first, selectedPiece.second, i , j, turnojugador, 1);
+            juego.mover_Ficha(selectedPiece.first, selectedPiece.second, i , j, turnojugador, 0);
             selectedPiece = std::pair<int, int>(-1, -1);
-            turnojugador = !turnojugador;
+            turnojugador = !turnojugador; //turno de la maquina
         } else {
             std::cout << "No puedes mover esa ficha" << std::endl;
+            selectedPiece = std::pair<int, int>(-1, -1);
         }
+        setBoardData(juego.getTablero());
+        glutPostRedisplay();
+
     }
-    
-    setBoardData(juego.getTablero());
-    glutPostRedisplay();
+
+    if(!turnojugador) {
+        computadoraJuega();
+        turnojugador = 1;
+        setBoardData(juego.getTablero());
+        glutPostRedisplay();
+    }
 }
 
 void Board::setBoardData(const std::vector<std::vector<Ficha*>>& inputData) {
